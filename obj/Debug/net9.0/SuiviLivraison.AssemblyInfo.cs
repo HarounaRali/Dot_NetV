@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SuiviLivraison")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+106494183083ff3b0fa8b05b9dc0bec0f44b3c73")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+36d14d7d250df1bab0b2e566e54ee6e89f1f4f21")]
 [assembly: System.Reflection.AssemblyProductAttribute("SuiviLivraison")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SuiviLivraison")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SuiviLivraison.Data;
 using SuiviLivraison.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace SuiviLivraison.Controllers
 {
@@ -10,10 +11,12 @@ namespace SuiviLivraison.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Dashboard()
@@ -129,18 +132,48 @@ namespace SuiviLivraison.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateClient(CreateClientViewModel model)
         {
+            // Supprimer les erreurs de validation pour ConfirmPassword
+            ModelState.Remove("ConfirmPassword");
+            
             if (ModelState.IsValid)
             {
-                var client = new Client
+                // Créer d'abord l'utilisateur Identity
+                var user = new IdentityUser
                 {
-                    Nom = model.Nom,
+                    UserName = model.Email,
                     Email = model.Email,
-                    Telephone = model.Telephone
+                    PhoneNumber = model.Telephone,
+                    EmailConfirmed = true
                 };
 
-                _context.Clients.Add(client);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Clients));
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // Ajouter le rôle Client
+                    await _userManager.AddToRoleAsync(user, "Client");
+
+                    // Créer le client avec l'IdentityUserId
+                    var client = new Client
+                    {
+                        Nom = model.Nom,
+                        Email = model.Email,
+                        Telephone = model.Telephone,
+                        IdentityUserId = user.Id
+                    };
+
+                    _context.Clients.Add(client);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["Success"] = "Client créé avec succès !";
+                    return RedirectToAction(nameof(Clients));
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
             }
             return View(model);
         }
@@ -155,19 +188,49 @@ namespace SuiviLivraison.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateLivreur(CreateLivreurViewModel model)
         {
+            // Supprimer les erreurs de validation pour ConfirmPassword
+            ModelState.Remove("ConfirmPassword");
+            
             if (ModelState.IsValid)
             {
-                var livreur = new Livreur
+                // Créer d'abord l'utilisateur Identity
+                var user = new IdentityUser
                 {
-                    Nom = model.Nom,
+                    UserName = model.Email,
                     Email = model.Email,
-                    Telephone = model.Telephone,
-                    Statut = "Actif"
+                    PhoneNumber = model.Telephone,
+                    EmailConfirmed = true
                 };
 
-                _context.Livreurs.Add(livreur);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Livreurs));
+                var result = await _userManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    // Ajouter le rôle Livreur
+                    await _userManager.AddToRoleAsync(user, "Livreur");
+
+                    // Créer le livreur avec l'IdentityUserId
+                    var livreur = new Livreur
+                    {
+                        Nom = model.Nom,
+                        Email = model.Email,
+                        Telephone = model.Telephone,
+                        Statut = "Actif",
+                        IdentityUserId = user.Id
+                    };
+
+                    _context.Livreurs.Add(livreur);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["Success"] = "Livreur créé avec succès !";
+                    return RedirectToAction(nameof(Livreurs));
+                }
+                else
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error.Description);
+                    }
+                }
             }
             return View(model);
         }

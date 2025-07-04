@@ -27,7 +27,6 @@ namespace SuiviLivraison.Models
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirmer le mot de passe")]
-        [Compare("Password", ErrorMessage = "Les mots de passe ne correspondent pas")]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
 } 
